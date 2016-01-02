@@ -22,6 +22,6 @@ add_library(dchain SHARED "src/dchain.cpp")
 file(GLOB includes "${CMAKE_SOURCE_DIR}/include/*.h")
 install(FILES ${includes} DESTINATION "include/dchain")
 
-set(INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/dchain")
+set(INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 
 install(TARGETS dchain DESTINATION ${INSTALL_DIR})
