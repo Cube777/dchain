@@ -68,7 +68,7 @@ std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool 
     //length
     if (salt) {
         int trailChars = TrailingChars(keywordShift);
-        srand(time(NULL));
+        srand(clock());
         for (int i = 0; i < trailChars; i++)
             temp += char(rand() % 95 + 32);
     }
