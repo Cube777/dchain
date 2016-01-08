@@ -124,15 +124,8 @@ std::string dchain::strDecrypt(std::string ciphertext, std::string keyword, bool
 		temp += plaintext[i];
 
 
-	if (salt) {
-		int trailChars = TrailingChars(keywordShift);
-		for (int i = 0; i < trailChars; i++) {
-			if (ciphertext.empty())
-				return std::string();
-
-			ciphertext.erase(0, 1);
-		}
-	}
+	if (salt)
+		temp.erase(0, TrailingChars(keywordShift));
 
 
 	return temp;
