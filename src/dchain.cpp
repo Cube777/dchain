@@ -38,7 +38,7 @@ std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool 
 		int trailChars = TrailingChars(keywordShift);
 		srand(clock());
 		for (int i = 0; i < trailChars; i++)
-			plaintext.insert(temp.begin(), char(rand() % 95 + 32));
+			plaintext.insert(plaintext.begin(), char(rand() % 95 + 32));
 	}
 
 	//Break up plaintext into blocks of chars the size of the keyword
