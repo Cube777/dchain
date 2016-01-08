@@ -22,190 +22,193 @@ std::string ShiftBack(std::string str, int* shifts);
 
 std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool salt /*=true*/)
 {
-    if (plaintext.empty() ||
-            keyword.empty())
-        return std::string();
+	if (plaintext.empty() ||
+			keyword.empty())
+		return std::string();
 
-    int* keywordShift = HashString(keyword);
-    int* tempShift;
-    std::vector<std::string> strblocks;
-    std::string temp;
+	int* keywordShift = HashString(keyword);
+	int* tempShift;
+	std::vector<std::string> strblocks;
+	std::string temp;
 
-    //Break up plaintext into blocks of chars the size of the keyword
-    //and copy into vector
-    for (int i = 0; i < plaintext.size();) {
-        temp.clear();
+	//Add a calculated amount (calculated using the keyword)
+	//of random chars to the cipherText to obscure text
+	//length and change string completely with every encryption
+	if (salt) {
+		int trailChars = TrailingChars(keywordShift);
+		srand(clock());
+		for (int i = 0; i < trailChars; i++)
+			temp.insert(temp.begin(), char(rand() % 95 + 32));
+	}
 
-        for (; (i < plaintext.size()) && (temp.size() < keyword.size()); i++)
-            temp += plaintext[i];
+	//Break up plaintext into blocks of chars the size of the keyword
+	//and copy into vector
+	for (int i = 0; i < plaintext.size();) {
+		temp.clear();
 
-        strblocks.push_back(temp);
-    }
+		for (; (i < plaintext.size()) && (temp.size() < keyword.size()); i++)
+			temp += plaintext[i];
 
-    //First shift plaintext forward with dynamic shift,
-    //add that to cipherText vector, then shift it again
-    //with keyword and use that as the keyword for the next string block
-    std::string currKeyword = keyword;
-    std::vector<std::string> ciphertext;
-    ciphertext.reserve(strblocks.size());
-    for (int i = 0; i < strblocks.size(); i++) {
-        //Get next ciphertext block with dynamic keyword
-        tempShift = HashString(currKeyword);
-        temp = ShiftForward(strblocks[i], tempShift);
-        delete tempShift;
+		strblocks.push_back(temp);
+	}
 
-        //Get next keyword
-        ciphertext.push_back(temp);
-        currKeyword = ShiftForward(temp, keywordShift);
-    }
+	//First shift plaintext forward with dynamic shift,
+	//add that to cipherText vector, then shift it again
+	//with keyword and use that as the keyword for the next string block
+	std::string currKeyword = keyword;
+	std::vector<std::string> ciphertext;
+	ciphertext.reserve(strblocks.size());
+	for (int i = 0; i < strblocks.size(); i++) {
+		//Get next ciphertext block with dynamic keyword
+		tempShift = HashString(currKeyword);
+		temp = ShiftForward(strblocks[i], tempShift);
+		delete tempShift;
 
-    temp.clear();
-    for (int i = 0; i < ciphertext.size(); i++)
-        temp += ciphertext[i];
+		//Get next keyword
+		ciphertext.push_back(temp);
+		currKeyword = ShiftForward(temp, keywordShift);
+	}
 
-    //Add a calculated amount (calculated using the keyword)
-    //of random chars to the cipherText to obscure text
-    //length
-    if (salt) {
-        int trailChars = TrailingChars(keywordShift);
-        srand(clock());
-        for (int i = 0; i < trailChars; i++)
-            temp += char(rand() % 95 + 32);
-    }
+	temp.clear();
+	for (int i = 0; i < ciphertext.size(); i++)
+		temp += ciphertext[i];
 
-    delete keywordShift;
-    return temp;
+
+	delete keywordShift;
+	return temp;
 }
 
 std::string dchain::strDecrypt(std::string ciphertext, std::string keyword, bool salt /*=true*/)
 {
-    if (ciphertext.empty() ||
-            keyword.empty())
-        return std::string();
+	if (ciphertext.empty() ||
+			keyword.empty())
+		return std::string();
 
-    int* keywordShift = HashString(keyword);
-    int trailChars = TrailingChars(keywordShift);
+	int* keywordShift = HashString(keyword);
 
-    if (salt) {
-        for (int i = 0; i < trailChars; i++) {
-            if (ciphertext.empty())
-                return std::string();
+	//Break up the ciphertext into blocks the
+	//size of the keyword
+	std::vector<std::string> strblocks;
+	std::string temp;
+	for (int i = 0; i < ciphertext.size();) {
+		temp.clear();
 
-            ciphertext.pop_back();
-        }
-    }
+		for (; (i < ciphertext.size()) && (temp.size() < keyword.size()); i++)
+			temp += ciphertext[i];
 
-    //Break up the ciphertext into blocks the
-    //size of the keyword
-    std::vector<std::string> strblocks;
-    std::string temp;
-    for (int i = 0; i < ciphertext.size();) {
-        temp.clear();
+		strblocks.push_back(temp);
+	}
 
-        for (; (i < ciphertext.size()) && (temp.size() < keyword.size()); i++)
-            temp += ciphertext[i];
+	//Shift the strblock back once with the dynamic shifts
+	//and add it to plaintext vector. Also shift strblock
+	//forward to obtain next dynamixc shift
+	std::string currKeyword = keyword;
+	std::vector<std::string> plaintext;
+	plaintext.reserve(strblocks.size());
+	int* tempShift;
 
-        strblocks.push_back(temp);
-    }
+	for (int i = 0; i < strblocks.size(); i++) {
+		//Get plaintext with dynamic keyword
+		tempShift = HashString(currKeyword);
+		temp = ShiftBack(strblocks[i], tempShift);
+		delete tempShift;
+		plaintext.push_back(temp);
 
-    //Shift the strblock back once with the dynamic shifts
-    //and add it to plaintext vector. Also shift strblock
-    //forward to obtain next dynamixc shift
-    std::string currKeyword = keyword;
-    std::vector<std::string> plaintext;
-    plaintext.reserve(strblocks.size());
-    int* tempShift;
+		//Get next keyword
+		currKeyword = ShiftForward(strblocks[i], keywordShift);
+	}
 
-    for (int i = 0; i < strblocks.size(); i++) {
-        //Get plaintext with dynamic keyword
-        tempShift = HashString(currKeyword);
-        temp = ShiftBack(strblocks[i], tempShift);
-        delete tempShift;
-        plaintext.push_back(temp);
+	temp.clear();
 
-        //Get next keyword
-        currKeyword = ShiftForward(strblocks[i], keywordShift);
-    }
+	for (int i = 0; i < plaintext.size(); i++)
+		temp += plaintext[i];
 
-    temp.clear();
 
-    for (int i = 0; i < plaintext.size(); i++)
-        temp += plaintext[i];
+	if (salt) {
+		int trailChars = TrailingChars(keywordShift);
+		for (int i = 0; i < trailChars; i++) {
+			if (ciphertext.empty())
+				return std::string();
 
-    return temp;
+			ciphertext.erase(0, 1);
+		}
+	}
+
+
+	return temp;
 }
 
 int* HashString(std::string str)
 {
-    int* shifts = new int[str.size() + 1];
-    shifts[str.size()] = 0;
+	int* shifts = new int[str.size() + 1];
+	shifts[str.size()] = 0;
 
-    //Calculates an integer, "total" by using the
-    //ASCII value of the char if the char's position
-    //is an even number, or the ASCII value * 2 if
-    //it is an uneven value
-    int total = 0;
-    for (int i = 0; i < str.size(); i++) {
-        if (i % 2 == 0)
-            total += int(str[i]);
-        else
-            total += int(str[i]) * 2;
-    }
+	//Calculates an integer, "total" by using the
+	//ASCII value of the char if the char's position
+	//is an even number, or the ASCII value * 2 if
+	//it is an uneven value
+	int total = 0;
+	for (int i = 0; i < str.size(); i++) {
+		if (i % 2 == 0)
+			total += int(str[i]);
+		else
+			total += int(str[i]) * 2;
+	}
 
-    //Calculate the shift for each value
-    //using (total / ASCII value) + remainder as
-    //formula
-    for (int i = 0; i < str.size(); i++)
-        shifts[i] = (total / int(str[i])) + (total % int(str[i]));
+	//Calculate the shift for each value
+	//using (total / ASCII value) + remainder as
+	//formula
+	for (int i = 0; i < str.size(); i++)
+		shifts[i] = (total / int(str[i])) + (total % int(str[i]));
 
-    return shifts;
+	return shifts;
 }
 
 int TrailingChars(int* shifts)
 {
-    int total = 0;
-    for (int i = 0; shifts[i] != 0; i++)
-        total += shifts[i];
+	int total = 0;
+	for (int i = 0; shifts[i] != 0; i++)
+		total += shifts[i];
 
-    return total % 25;
+	return total % 25;
 }
 
 std::string ShiftForward(std::string str, int* shifts)
 {
-    int ascii;
-    std::string temp;
+	int ascii;
+	std::string temp;
 
-    for (int i = 0; i < str.size(); i++) {
-        //Increase ascii value with shift
-        ascii = int(str[i]) + shifts[i];
+	for (int i = 0; i < str.size(); i++) {
+		//Increase ascii value with shift
+		ascii = int(str[i]) + shifts[i];
 
-        //Reduce ascci value until it is in the standard
-        //ASCII table
-        while (ascii > 126)
-            ascii -= 95;
+		//Reduce ascci value until it is in the standard
+		//ASCII table
+		while (ascii > 126)
+			ascii -= 95;
 
-        temp += char(ascii);
-    }
+		temp += char(ascii);
+	}
 
-    return temp;
+	return temp;
 }
 
 std::string ShiftBack(std::string str, int* shifts)
 {
-    int ascii;
-    std::string temp;
+	int ascii;
+	std::string temp;
 
-    for (int i = 0; i < str.size(); i++) {
-        //Decrease ascii with shift
-        ascii = int(str[i]) - shifts[i];
+	for (int i = 0; i < str.size(); i++) {
+		//Decrease ascii with shift
+		ascii = int(str[i]) - shifts[i];
 
-        //Increase asscii until it is in
-        //the standard ASCII table
-        while (ascii < 32)
-            ascii += 95;
+		//Increase asscii until it is in
+		//the standard ASCII table
+		while (ascii < 32)
+			ascii += 95;
 
-        temp += char(ascii);
-    }
+		temp += char(ascii);
+	}
 
-    return temp;
+	return temp;
 }
