@@ -18,6 +18,10 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 #Add library modules
 add_library(dchain SHARED "src/dchain.cpp")
 
+#Tools for testing
+add_executable(tools "${CMAKE_SOURCE_DIR}/tools.cpp")
+target_link_libraries(tools dchain)
+
 #Installation
 file(GLOB includes "${CMAKE_SOURCE_DIR}/include/*.h")
 install(FILES ${includes} DESTINATION "include/dchain")
