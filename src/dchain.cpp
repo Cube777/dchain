@@ -1,19 +1,20 @@
 #include "../include/dchain.h"
 
+#include <string>
 #include <time.h>
-#include <stdlib.h>
 #include <vector>
+#include <math.h>
 
-//Hash a string, returns int* terminated by a 0.
+//Generate shifts from a string, returns int*
 //Heap memory, so delete when finished
-int* HashString(std::string str);
+int* genShifts(std::string str);
 
-//Calculates how much random chars should be appended
-//to string to obscure string length
-int TrailingChars(int* shifts);
+//Calculates how much random chars should be injected
+//into string
+int saltiness(int* shifts);
 
 //Shifts a given string forward using previously
-//calculated hash for HashString
+//calculated shifts
 std::string ShiftForward(std::string str, int* shifts);
 
 //Shifts a given string backward using previously
@@ -22,22 +23,22 @@ std::string ShiftBack(std::string str, int* shifts);
 
 std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool salt /*=true*/)
 {
-	if (plaintext.empty() ||
-			keyword.empty())
+	if (plaintext.empty() || keyword.empty())
 		return std::string();
 
-	int* keywordShift = HashString(keyword);
+	int* keywordShift = genShifts(keyword);
 	int* tempShift;
 	std::vector<std::string> strblocks;
 	std::string temp;
 
-	//Add a calculated amount (calculated using the keyword)
-	//of random chars to the cipherText to obscure text
-	//length and change string completely with every encryption
+	//Inject random characters into the begining of the plaintext string,
+	//which will combined with the daisy chaining generate a new, completely
+	//different string with each encryption even though you use the same plaintext
+	//and keyword
 	if (salt) {
-		int trailChars = TrailingChars(keywordShift);
+		int granules = saltiness(keywordShift);
 		srand(clock());
-		for (int i = 0; i < trailChars; i++)
+		for (int i = 0; i < granules; i++)
 			plaintext.insert(plaintext.begin(), char(rand() % 95 + 32));
 	}
 
@@ -52,15 +53,14 @@ std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool 
 		strblocks.push_back(temp);
 	}
 
-	//First shift plaintext forward with dynamic shift,
-	//add that to cipherText vector, then shift it again
-	//with keyword and use that as the keyword for the next string block
+	//Shift string block forward with dynamically generated keyword,
+	//add that to the ciphertext vector and then shift the string
+	//forward again to create the dynamic keyword for the next text block
 	std::string currKeyword = keyword;
 	std::vector<std::string> ciphertext;
 	ciphertext.reserve(strblocks.size());
 	for (int i = 0; i < strblocks.size(); i++) {
-		//Get next ciphertext block with dynamic keyword
-		tempShift = HashString(currKeyword);
+		tempShift = genShifts(currKeyword);
 		temp = ShiftForward(strblocks[i], tempShift);
 		delete tempShift;
 
@@ -80,11 +80,10 @@ std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool 
 
 std::string dchain::strDecrypt(std::string ciphertext, std::string keyword, bool salt /*=true*/)
 {
-	if (ciphertext.empty() ||
-			keyword.empty())
+	if (ciphertext.empty() || keyword.empty())
 		return std::string();
 
-	int* keywordShift = HashString(keyword);
+	int* keywordShift = genShifts(keyword);
 
 	//Break up the ciphertext into blocks the
 	//size of the keyword
@@ -99,9 +98,9 @@ std::string dchain::strDecrypt(std::string ciphertext, std::string keyword, bool
 		strblocks.push_back(temp);
 	}
 
-	//Shift the strblock back once with the dynamic shifts
-	//and add it to plaintext vector. Also shift strblock
-	//forward to obtain next dynamixc shift
+	//Shift string block backwards once with the dynamic keyword
+	//to obtain plaintext. Then shift the ciphertext block forwards
+	//once more to obtain the dynamic keyword for the next block
 	std::string currKeyword = keyword;
 	std::vector<std::string> plaintext;
 	plaintext.reserve(strblocks.size());
@@ -109,7 +108,7 @@ std::string dchain::strDecrypt(std::string ciphertext, std::string keyword, bool
 
 	for (int i = 0; i < strblocks.size(); i++) {
 		//Get plaintext with dynamic keyword
-		tempShift = HashString(currKeyword);
+		tempShift = genShifts(currKeyword);
 		temp = ShiftBack(strblocks[i], tempShift);
 		delete tempShift;
 		plaintext.push_back(temp);
@@ -119,27 +118,26 @@ std::string dchain::strDecrypt(std::string ciphertext, std::string keyword, bool
 	}
 
 	temp.clear();
-
 	for (int i = 0; i < plaintext.size(); i++)
 		temp += plaintext[i];
 
-
 	if (salt)
-		temp.erase(0, TrailingChars(keywordShift));
+		temp.erase(0, saltiness(keywordShift));
 
-
+	delete keywordShift;
 	return temp;
 }
 
-int* HashString(std::string str)
+int* genShifts(std::string str)
 {
-	int* shifts = new int[str.size() + 1];
-	shifts[str.size()] = 0;
+	int* shifts = new int[str.size()];
 
 	//Calculates an integer, "total" by using the
-	//ASCII value of the char if the char's position
-	//is an even number, or the ASCII value * 2 if
-	//it is an uneven value
+	//sum ASCII values of the chars. If the char's
+	//position in the string is an even number, multiply it's
+	//value by two. This to to prevent strings containing the
+	//same chars to generate the same shifts that are just in
+	//a different order.
 	int total = 0;
 	for (int i = 0; i < str.size(); i++) {
 		if (i % 2 == 0)
@@ -148,21 +146,24 @@ int* HashString(std::string str)
 			total += int(str[i]) * 2;
 	}
 
-	//Calculate the shift for each value
-	//using (total / ASCII value) + remainder as
-	//formula
+	//Calculate the shift for each char by dividing the total
+	//with the ASCII value of the char and using the floor value of
+	//the division. Then add the remainder of the division to the value
+	//to prevent that two chars have the same value (because of rounding)
 	for (int i = 0; i < str.size(); i++)
-		shifts[i] = (total / int(str[i])) + (total % int(str[i]));
+		shifts[i] = (floor(total / int(str[i]))) + (total % int(str[i]));
 
 	return shifts;
 }
 
-int TrailingChars(int* shifts)
+int saltiness(int* shifts)
 {
 	int total = 0;
 	for (int i = 0; shifts[i] != 0; i++)
 		total += shifts[i];
 
+	//This will limit the length of the salt to no more than 24
+	//chars.
 	return total % 25;
 }
 
