@@ -44,6 +44,7 @@ std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool 
 
 	//Break up plaintext into blocks of chars the size of the keyword
 	//and copy into vector
+	strblocks.reserve(ceil(plaintext.size() / keyword.size()));
 	for (int i = 0; i < plaintext.size();) {
 		temp.clear();
 
