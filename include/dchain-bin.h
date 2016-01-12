@@ -25,7 +25,7 @@
 namespace dchain
 {
 	struct data {
-		char* addr;
+		unsigned char* addr;
 		unsigned int size;
 	};
 /*
@@ -33,7 +33,7 @@ namespace dchain
  * making the resulting encrypted data unique. Return data will be empty if either the keyword or data size is null.
  * Returned data is heap allocted.
  */
-	data binEncrypt(char* bin, unsigned int size, std::string keyword, bool salt = true);
+	data binEncrypt(unsigned char* bin, unsigned int size, std::string keyword, bool salt = true);
 
 /*
  * Decrypts a piece of binary data. If salt was used at encryption it needs to be enabled again (default).
@@ -41,5 +41,5 @@ namespace dchain
  * Data will also be empty if keyword is empty or size is null.
  * Returned data is heap allocted.
  */
-	data binDecrypt(char* bin, unsigned int size, std::string keyword, bool salt = true);
+	data binDecrypt(unsigned char* bin, unsigned int size, std::string keyword, bool salt = true);
 }

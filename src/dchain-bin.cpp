@@ -7,23 +7,23 @@ using namespace dchain;
 
 //Generate shifts for a given piece of data
 //Returns pointer to heap memory
-int* genShifts(char* bin, int size);
+int* genShifts(unsigned char* bin, int size);
 
 //Calculates how much random chars should be injected into bin data
 int saltiness(int* shifts);
 
 //Shift given data forward - in-place shifting
-void shiftForward(char* bin, int size, int* shifts);
+void shiftForward(unsigned char* bin, int size, int* shifts);
 
 //Shift given data backwards - in-place shifting
-void shiftBackward(char* bin, int size, int* shifts);
+void shiftBackward(unsigned char* bin, int size, int* shifts);
 
-data binEncrypt(char* bin, unsigned int size, std::string keyword, bool salt /*= true*/)
+data dchain::binEncrypt(unsigned char* bin, unsigned int size, std::string keyword, bool salt /*= true*/)
 {
 	if (keyword.empty() || size == 0)
 		return data();
 
-	char* key = new char[keyword.size()];
+	unsigned char* key = new unsigned char[keyword.size()];
 	for (int i = 0; i < keyword.size(); i++)
 		key[i] = keyword[i];
 	int keySize = keyword.size();
@@ -36,16 +36,16 @@ data binEncrypt(char* bin, unsigned int size, std::string keyword, bool salt /*=
 	else
 		crumbs = 0;
 
-
-	char* block = new char[keySize];
-	char* crypt = new char[crumbs + size];
+	unsigned char* block = new unsigned char[keySize];
+	unsigned char* crypt = new unsigned char[crumbs + size];
 	int* dShifts = genShifts(key, keySize);
 	int pos;
+	std::srand(clock());
 
 	for (int i = 0; i < crumbs + size; i++) {
-		pos = (i + keySize + 1) % keySize;
+		pos = (i + keySize) % keySize;
 		if (i < crumbs)
-			block[pos] = random() % 256;
+			block[pos] = rand() % 256;
 		else
 			block[pos] = bin[i - crumbs];
 
@@ -73,7 +73,7 @@ data binEncrypt(char* bin, unsigned int size, std::string keyword, bool salt /*=
 	return rtrn;
 }
 
-int* genShifts(char* bin, int size)
+int* genShifts(unsigned char* bin, int size)
 {
 	int* shifts = new int[size];
 
@@ -86,7 +86,7 @@ int* genShifts(char* bin, int size)
 	}
 
 	for (int i = 0; i < size; i++)
-		shifts[i] = (floor(total / int(bin[i]))) + (total % int(bin[i]));
+		shifts[i] = ( floor(total / (int(bin[i]))) + (total % (int(bin[i]))) );
 
 	return shifts;
 }
@@ -100,7 +100,7 @@ int saltiness(int* shifts)
 	return total % 25;
 }
 
-void shiftForward(char* bin, int size, int* shifts)
+void shiftForward(unsigned char* bin, int size, int* shifts)
 {
 	int value;
 
@@ -109,11 +109,11 @@ void shiftForward(char* bin, int size, int* shifts)
 		while (value > 255)
 			value -= 255;
 
-		bin[i] = char(value);
+		bin[i] = value;
 	}
 }
 
-void shiftBackward(char* bin, int size, int* shifts)
+void shiftBackward(unsigned char* bin, int size, int* shifts)
 {
 	int value;
 
@@ -122,6 +122,6 @@ void shiftBackward(char* bin, int size, int* shifts)
 		while (value < 0)
 			value += 255;
 
-		bin[i] = char(value);
+		bin[i] = value;
 	}
 }
