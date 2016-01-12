@@ -16,11 +16,12 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 #Add library modules
-add_library(dchain SHARED "src/dchain.cpp" "src/dchain-bin.cpp")
+add_library(dchain SHARED "src/dchain.cpp")
+add_library(dchain-bin SHARED "src/dchain-bin.cpp")
 
 #Tools for testing
 add_executable(tools "${CMAKE_SOURCE_DIR}/tools.cpp")
-target_link_libraries(tools dchain)
+target_link_libraries(tools dchain dchain-bin)
 
 #Installation
 file(GLOB includes "${CMAKE_SOURCE_DIR}/include/*.h")
@@ -28,4 +29,4 @@ install(FILES ${includes} DESTINATION "include/dchain")
 
 set(INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 
-install(TARGETS dchain DESTINATION ${INSTALL_DIR})
+install(TARGETS dchain dchain-bin DESTINATION ${INSTALL_DIR})

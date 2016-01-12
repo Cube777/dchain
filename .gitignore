@@ -30,8 +30,5 @@
 # YCM
 .ycm*
 
-# Tools
-tools.cpp
-
 # Vim swap
 *.swp

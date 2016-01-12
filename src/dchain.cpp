@@ -18,7 +18,7 @@ int saltiness(int* shifts);
 std::string ShiftForward(std::string str, int* shifts);
 
 //Shifts a given string backward using previously
-//calculated hash from HashString
+//calculated shifts
 std::string ShiftBack(std::string str, int* shifts);
 
 std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool salt /*=true*/)
