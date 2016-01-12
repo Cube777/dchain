@@ -15,7 +15,7 @@
 /*
  * This is the same algorithm as the dchain string encryption lib, but with support for binary data.
  * Note that this algorithm and the string encryption algoritm are NOT compatible!
- * See include/dchain.h for notes on algorithm
+ * See include/dchain.h for notes and comments on algorithm
  *
  */
 

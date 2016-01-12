@@ -5,7 +5,7 @@
 #include <vector>
 #include <math.h>
 
-//Generate shifts from a string, returns int*
+//Generate shifts from a string, returns int* terminated with 0
 //Heap memory, so delete when finished
 int* genShifts(std::string str);
 
@@ -131,7 +131,8 @@ std::string dchain::strDecrypt(std::string ciphertext, std::string keyword, bool
 
 int* genShifts(std::string str)
 {
-	int* shifts = new int[str.size()];
+	int* shifts = new int[str.size() + 1];
+	shifts[str.size()] = 0;
 
 	//Calculates an integer, "total" by using the
 	//sum ASCII values of the chars. If the char's
