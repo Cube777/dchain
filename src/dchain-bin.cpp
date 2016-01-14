@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <time.h>
+#include <iostream>
 
 using namespace dchain;
 
@@ -73,9 +74,65 @@ data dchain::binEncrypt(unsigned char* bin, unsigned int size, std::string keywo
 	return rtrn;
 }
 
+data dchain::binDecrypt(unsigned char* bin, unsigned int size, std::string keyword, bool salt /*= true*/)
+{
+	if (keyword.empty() || size == 0)
+		return data();
+
+	unsigned char* key = new unsigned char[keyword.size()];
+	for (int i = 0; i < keyword.size(); i++)
+		key[i] = keyword[i];
+	int keySize = keyword.size();
+	keyword.clear();
+
+	int* keyShifts = genShifts(key, keySize);
+
+	int crumbs;
+	if (salt)
+		crumbs = saltiness(keyShifts);
+	else
+		crumbs = 0;
+
+	unsigned char* block = new unsigned char[keySize];
+	unsigned char* plain = new unsigned char[size - crumbs];
+	int* dShifts = genShifts(key, keySize);
+	int pos;
+
+	for (int i = 0; i < size; i++) {
+		pos = (i + keySize) % keySize;
+		block[pos] = bin[i];
+
+		if (pos + 1 == keySize) {
+			shiftBackward(block, keySize, dShifts);
+			for (int k = keySize - 1; k >= 0; k--) {
+				if ((i - k) >= crumbs)
+					plain[i - crumbs - k] = block[keySize - k - 1];
+			}
+			shiftForward(block, keySize, dShifts);
+			shiftForward(block, keySize, keyShifts);
+			delete[] dShifts;
+			dShifts = genShifts(block, keySize);
+		} else if (i + 1 == size) {
+			shiftBackward(block, pos + 1, dShifts);
+			delete[] dShifts;
+			for (int k = pos; k >= 0; k--)
+				plain[i - crumbs - k] = block[pos - k];
+			delete[] block;
+		}
+	}
+
+	delete[] key;
+	delete[] keyShifts;
+	data rtrn;
+	rtrn.addr = plain;
+	rtrn.size = size - crumbs;
+	return rtrn;
+}
+
 int* genShifts(unsigned char* bin, int size)
 {
 	int* shifts = new int[size];
+	shifts[size] = 0;
 
 	int total = 0;
 	for (int i = 0; i < size; i++) {
@@ -86,7 +143,7 @@ int* genShifts(unsigned char* bin, int size)
 	}
 
 	for (int i = 0; i < size; i++)
-		shifts[i] = ( floor(total / (int(bin[i]))) + (total % (int(bin[i]))) );
+		shifts[i] = ( floor(total / (int(bin[i]) + 1)) + (total % (int(bin[i]) + 1)) );
 
 	return shifts;
 }
@@ -107,7 +164,7 @@ void shiftForward(unsigned char* bin, int size, int* shifts)
 	for (int i = 0; i < size; i++) {
 		value = int(bin[i]) + shifts[i];
 		while (value > 255)
-			value -= 255;
+			value -= 256;
 
 		bin[i] = value;
 	}
@@ -120,7 +177,7 @@ void shiftBackward(unsigned char* bin, int size, int* shifts)
 	for (int i = 0; i < size; i++) {
 		value = int(bin[i]) - shifts[i];
 		while (value < 0)
-			value += 255;
+			value += 256;
 
 		bin[i] = value;
 	}
