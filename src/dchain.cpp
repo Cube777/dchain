@@ -63,7 +63,7 @@ std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool 
 	for (int i = 0; i < strblocks.size(); i++) {
 		tempShift = genShifts(currKeyword);
 		temp = ShiftForward(strblocks[i], tempShift);
-		delete tempShift;
+		delete[] tempShift;
 
 		//Get next keyword
 		ciphertext.push_back(temp);
@@ -75,7 +75,7 @@ std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool 
 		temp += ciphertext[i];
 
 
-	delete keywordShift;
+	delete[] keywordShift;
 	return temp;
 }
 
@@ -111,7 +111,7 @@ std::string dchain::strDecrypt(std::string ciphertext, std::string keyword, bool
 		//Get plaintext with dynamic keyword
 		tempShift = genShifts(currKeyword);
 		temp = ShiftBack(strblocks[i], tempShift);
-		delete tempShift;
+		delete[] tempShift;
 		plaintext.push_back(temp);
 
 		//Get next keyword
@@ -125,7 +125,7 @@ std::string dchain::strDecrypt(std::string ciphertext, std::string keyword, bool
 	if (salt)
 		temp.erase(0, saltiness(keywordShift));
 
-	delete keywordShift;
+	delete[] keywordShift;
 	return temp;
 }
 
