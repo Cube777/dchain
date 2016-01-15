@@ -52,7 +52,7 @@ data dchain::binEncrypt(unsigned char* bin, unsigned int size, std::string keywo
 
 		if (pos + 1 == keySize) {
 			shiftForward(block, keySize, dShifts);
-			delete dShifts;
+			delete[] dShifts;
 			for (int k = keySize - 1; k >= 0; k--)
 				crypt[i - k] = block[keySize - k - 1];
 			shiftForward(block, keySize, keyShifts);
@@ -131,7 +131,7 @@ data dchain::binDecrypt(unsigned char* bin, unsigned int size, std::string keywo
 
 int* genShifts(unsigned char* bin, int size)
 {
-	int* shifts = new int[size];
+	int* shifts = new int[size + 1];
 	shifts[size] = 0;
 
 	int total = 0;
