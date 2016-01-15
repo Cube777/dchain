@@ -59,12 +59,12 @@ data dchain::binEncrypt(unsigned char* bin, unsigned int size, std::string keywo
 			dShifts = genShifts(block, keySize);
 		} else if (i + 1 == crumbs + size) {
 			shiftForward(block, pos + 1, dShifts);
-			delete[] dShifts;
 			for (int k = pos; k >= 0; k--)
 				crypt[i - k] = block[pos - k];
-			delete[] block;
 		}
 	}
+	delete[] dShifts;
+	delete[] block;
 
 	delete[] key;
 	delete[] keyShifts;
@@ -114,12 +114,12 @@ data dchain::binDecrypt(unsigned char* bin, unsigned int size, std::string keywo
 			dShifts = genShifts(block, keySize);
 		} else if (i + 1 == size) {
 			shiftBackward(block, pos + 1, dShifts);
-			delete[] dShifts;
 			for (int k = pos; k >= 0; k--)
 				plain[i - crumbs - k] = block[pos - k];
-			delete[] block;
 		}
 	}
+	delete[] dShifts;
+	delete[] block;
 
 	delete[] key;
 	delete[] keyShifts;
