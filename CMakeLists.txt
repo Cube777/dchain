@@ -21,8 +21,10 @@ add_library(dchain-bin SHARED "src/dchain-bin.cpp")
 add_library(dchain-bin-threaded SHARED "src/dchain-bin-threaded.cpp")
 
 #Tools for testing
-add_executable(tools "${CMAKE_SOURCE_DIR}/tools.cpp")
-target_link_libraries(tools dchain dchain-bin dchain-bin-threaded)
+add_executable(string_test "${CMAKE_SOURCE_DIR}/tools/string-test.cpp")
+target_link_libraries(string_test dchain)
+add_executable(threaded_speed "${CMAKE_SOURCE_DIR}/tools/threaded-speed.cpp")
+target_link_libraries(threaded_speed dchain-bin-threaded)
 
 #Installation
 file(GLOB includes "${CMAKE_SOURCE_DIR}/include/*.h")

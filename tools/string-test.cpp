@@ -1,6 +1,6 @@
-//This is an easy way to test the dchain encryption library
+//This is an easy way to test the dchain string encryption library
 //^C will exit out of the program
-#include "include/dchain.h"
+#include "../include/dchain.h"
 #include <iostream>
 #include <limits>
 
@@ -18,7 +18,7 @@ int main() {
 		for (int i = 0; i < count; i++) {
 			temp = dchain::strEncrypt(plaintext, keyword);
 			std::cout << "String encrypted: " << temp << '\n';
-		//	std::cout << "String decrypted: " << dchain::strDecrypt(temp, keyword) << '\n';
+			std::cout << "String decrypted: " << dchain::strDecrypt(temp, keyword) << '\n';
 		}
 		std::cin.clear();
 		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
