@@ -186,12 +186,12 @@ void encryptThread(thrdData data)
 		{
 			int temp = i;
 			for (; temp < data.size + (data.threads * data.keySize); temp++)
-				block[temp % data.keySize] = data.bin[temp];
+				block[temp % data.keySize] = data.bin[temp - (data.threads * data.keySize)];
 			shiftForward(block, temp % data.keySize, dShifts);
 
 			temp = i;
 			for (; temp < data.size + (data.threads * data.keySize); temp++)
-				data.crypt[temp + (data.threads * data.keySize)] = block[temp % data.keySize];
+				data.crypt[temp] = block[temp % data.keySize];
 		}
 
 		for (int k = i - (data.threads * data.keySize); ((k + (data.threads * data.keySize)) - i) < data.keySize; k++)
@@ -220,18 +220,18 @@ void decryptThread(thrdData data)
 	shiftForward(block, data.keySize, data.keyShifts);
 	int* dShifts = genShifts(block, data.keySize);
 
-	for (int i = data.keySize * (data.threads + data.threadNum); i < data.size + (data.threads * data.keySize); i += (data.threads * data.keySize))
+	for (int i = data.keySize * (data.threads + data.threadNum); i < data.size; i += (data.threads * data.keySize))
 	{
-		if (i + data.keySize > data.size + (data.threads * data.keySize))
+		if (i + data.keySize > data.size)
 		{
 			int temp = i;
 			for (; temp < data.size; temp++)
-				block[temp % data.keySize] = data.bin[temp - (data.threads * data.keySize)];
-			shiftForward(block, temp % data.keySize, dShifts);
+				block[temp % data.keySize] = data.bin[temp];
+			shiftBackward(block, temp % data.keySize, dShifts);
 
 			temp = i;
 			for (; temp < data.size; temp++)
-				data.crypt[temp] = block[temp % data.keySize];
+				data.crypt[temp - (data.threads * data.keySize)] = block[temp % data.keySize];
 		}
 
 		for (int k = i; (k - i) < data.keySize; k++)
