@@ -10,7 +10,7 @@ endif()
 set(CMAKE_DEBUG_POSTFIX "d")
 
 #Add C++11 support
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 
 #Add include paths
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -18,10 +18,11 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 #Add library modules
 add_library(dchain SHARED "src/dchain.cpp")
 add_library(dchain-bin SHARED "src/dchain-bin.cpp")
+add_library(dchain-bin-threaded SHARED "src/dchain-bin-threaded.cpp")
 
 #Tools for testing
 add_executable(tools "${CMAKE_SOURCE_DIR}/tools.cpp")
-target_link_libraries(tools dchain dchain-bin)
+target_link_libraries(tools dchain dchain-bin dchain-bin-threaded)
 
 #Installation
 file(GLOB includes "${CMAKE_SOURCE_DIR}/include/*.h")
@@ -29,4 +30,4 @@ install(FILES ${includes} DESTINATION "include/dchain")
 
 set(INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 
-install(TARGETS dchain dchain-bin DESTINATION ${INSTALL_DIR})
+install(TARGETS dchain dchain-bin dchain-bin-threaded DESTINATION ${INSTALL_DIR})
