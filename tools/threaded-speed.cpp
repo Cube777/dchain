@@ -6,11 +6,18 @@
 
 #define THREADS 4
 #define PLENGTH 1000
+#define TESTFILE "test"
 
 int main()
 {
-	std::cout << "Trying to open file \"test\"...\n";
-	std::ifstream ind("test", std::ios::binary|std::ios::ate);
+	std::cout << "Trying to open file \"" << TESTFILE << "\"...\n";
+	std::ifstream ind(TESTFILE, std::ios::binary|std::ios::ate);
+	if (ind.is_open())
+		std::cout << "File \"" << TESTFILE << "\" opened...\n";
+	else {
+		std::cout << "Could not open file \"" << TESTFILE << "\". Aborting...\n";
+		return 1;
+	}
 	int size = ind.tellg();
 	ind.seekg(0, std::ios::beg);
 	unsigned char* bin = new unsigned char[size];
