@@ -26,6 +26,12 @@ std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool 
 	if (plaintext.empty() || keyword.empty())
 		return std::string();
 
+	static bool seed = true;
+	if (seed) {
+		seed = false;
+		srand(time(NULL));
+	}
+
 	int* keywordShift = genShifts(keyword);
 	int* tempShift;
 	std::vector<std::string> strblocks;
@@ -37,7 +43,6 @@ std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool 
 	//and keyword
 	if (salt) {
 		int granules = saltiness(keywordShift);
-		srand(clock());
 		for (int i = 0; i < granules; i++)
 			plaintext.insert(plaintext.begin(), char(rand() % 95 + 32));
 	}

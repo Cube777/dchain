@@ -41,7 +41,12 @@ data dchain::binEncrypt(unsigned char* bin, unsigned int size, std::string keywo
 	unsigned char* crypt = new unsigned char[crumbs + size];
 	int* dShifts = genShifts(key, keySize);
 	int pos;
-	std::srand(clock());
+
+	static bool seed = true;
+	if (seed) {
+		seed = false;
+		srand(time(NULL));
+	}
 
 	for (int i = 0; i < crumbs + size; i++) {
 		pos = (i + keySize) % keySize;

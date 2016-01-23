@@ -38,6 +38,12 @@ data dchain::binThreadEncrypt(unsigned char* bin, unsigned int size, std::string
 	if (keyword.empty() || size == 0 || threads == 0)
 		return data();
 
+	static bool seed = true;
+	if (seed) {
+		seed = false;
+		srand(time(NULL));
+	}
+
 	unsigned char* key = new unsigned char[keyword.size()];
 	for (int i = 0; i < keyword.size(); i++)
 		key[i] = keyword[i];
@@ -170,7 +176,6 @@ void shiftBackward(unsigned char* bin, int size, int* shifts)
 void encryptThread(thrdData data)
 {
 	unsigned char* block = new unsigned char[data.keySize];
-	std::srand(clock());
 	for (int i = 0; i < data.keySize; i++)
 		block[i] = rand() % 256;
 
