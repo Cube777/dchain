@@ -148,7 +148,7 @@ int* genShifts(unsigned char* bin, int size)
 	}
 
 	for (int i = 0; i < size; i++)
-		shifts[i] = ( floor(total / (int(bin[i]) + 1)) + (total % (int(bin[i]) + 1)) );
+		shifts[i] = total % (int(bin[i]) + 1);
 
 	return shifts;
 }

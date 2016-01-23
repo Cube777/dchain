@@ -153,12 +153,9 @@ int* genShifts(std::string str)
 			total += int(str[i]) * 2;
 	}
 
-	//Calculate the shift for each char by dividing the total
-	//with the ASCII value of the char and using the floor value of
-	//the division. Then add the remainder of the division to the value
-	//to prevent that two chars have the same value (because of rounding)
+	//Get shift by using the total mod the individual chars
 	for (int i = 0; i < str.size(); i++)
-		shifts[i] = (floor(total / int(str[i]))) + (total % int(str[i]));
+		shifts[i] = total % int(str[i]);
 
 	return shifts;
 }
