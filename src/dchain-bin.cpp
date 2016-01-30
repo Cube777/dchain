@@ -11,7 +11,7 @@ using namespace dchain;
 int* genShifts(unsigned char* bin, int size);
 
 //Calculates how much random chars should be injected into bin data
-int saltiness(int* shifts);
+int saltiness(int* shifts, int size);
 
 //Shift given data forward - in-place shifting
 void shiftForward(unsigned char* bin, int size, int* shifts);
@@ -33,7 +33,7 @@ data dchain::binEncrypt(unsigned char* bin, unsigned int size, std::string keywo
 	int* keyShifts = genShifts(key, keySize);
 	int crumbs;
 	if (salt)
-		crumbs = saltiness(keyShifts);
+		crumbs = saltiness(keyShifts, keyword.size());
 	else
 		crumbs = 0;
 
@@ -94,7 +94,7 @@ data dchain::binDecrypt(unsigned char* bin, unsigned int size, std::string keywo
 
 	int crumbs;
 	if (salt)
-		crumbs = saltiness(keyShifts);
+		crumbs = saltiness(keyShifts, keyword.size());
 	else
 		crumbs = 0;
 
@@ -136,8 +136,7 @@ data dchain::binDecrypt(unsigned char* bin, unsigned int size, std::string keywo
 
 int* genShifts(unsigned char* bin, int size)
 {
-	int* shifts = new int[size + 1];
-	shifts[size] = 0;
+	int* shifts = new int[size];
 
 	int total = 0;
 	for (int i = 0; i < size; i++) {
@@ -153,10 +152,10 @@ int* genShifts(unsigned char* bin, int size)
 	return shifts;
 }
 
-int saltiness(int* shifts)
+int saltiness(int* shifts, int size)
 {
 	int total = 0;
-	for (int i = 0; shifts[i] != 0; i++)
+	for (int i = 0; i < size; i++)
 		total += shifts[i];
 
 	return total % 25;

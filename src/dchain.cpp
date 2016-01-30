@@ -5,13 +5,13 @@
 #include <vector>
 #include <math.h>
 
-//Generate shifts from a string, returns int* terminated with 0
+//Generate shifts from a string
 //Heap memory, so delete when finished
 int* genShifts(std::string str);
 
 //Calculates how much random chars should be injected
 //into string
-int saltiness(int* shifts);
+int saltiness(int* shifts, int size);
 
 //Shifts a given string forward using previously
 //calculated shifts
@@ -42,7 +42,7 @@ std::string dchain::strEncrypt(std::string plaintext, std::string keyword, bool 
 	//different string with each encryption even though you use the same plaintext
 	//and keyword
 	if (salt) {
-		int granules = saltiness(keywordShift);
+		int granules = saltiness(keywordShift, keyword.size());
 		for (int i = 0; i < granules; i++)
 			plaintext.insert(plaintext.begin(), char(rand() % 95 + 32));
 	}
@@ -128,7 +128,7 @@ std::string dchain::strDecrypt(std::string ciphertext, std::string keyword, bool
 		temp += plaintext[i];
 
 	if (salt)
-		temp.erase(0, saltiness(keywordShift));
+		temp.erase(0, saltiness(keywordShift, keyword.size()));
 
 	delete[] keywordShift;
 	return temp;
@@ -136,8 +136,7 @@ std::string dchain::strDecrypt(std::string ciphertext, std::string keyword, bool
 
 int* genShifts(std::string str)
 {
-	int* shifts = new int[str.size() + 1];
-	shifts[str.size()] = 0;
+	int* shifts = new int[str.size()];
 
 	//Calculates an integer, "total" by using the
 	//sum ASCII values of the chars. If the char's
@@ -160,10 +159,10 @@ int* genShifts(std::string str)
 	return shifts;
 }
 
-int saltiness(int* shifts)
+int saltiness(int* shifts, int size)
 {
 	int total = 0;
-	for (int i = 0; shifts[i] != 0; i++)
+	for (int i = 0; i < size; i++)
 		total += shifts[i];
 
 	//This will limit the length of the salt to no more than 24

@@ -11,9 +11,6 @@ using namespace dchain;
 //Returns pointer to heap memory
 int* genShifts(unsigned char* bin, int size);
 
-//Calculates how much random chars should be injected into bin data
-int saltiness(int* shifts);
-
 //Shift given data forward - in-place shifting
 void shiftForward(unsigned char* bin, int size, int* shifts);
 
@@ -121,8 +118,7 @@ data dchain::binThreadDecrypt(unsigned char* bin, unsigned int size, std::string
 
 int* genShifts(unsigned char* bin, int size)
 {
-	int* shifts = new int[size + 1];
-	shifts[size] = 0;
+	int* shifts = new int[size];
 
 	int total = 0;
 	for (int i = 0; i < size; i++) {
@@ -136,15 +132,6 @@ int* genShifts(unsigned char* bin, int size)
 		shifts[i] = ( (total % (int(bin[i]) + 1)) );
 
 	return shifts;
-}
-
-int saltiness(int* shifts)
-{
-	int total = 0;
-	for (int i = 0; shifts[i] != 0; i++)
-		total += shifts[i];
-
-	return total % 25;
 }
 
 void shiftForward(unsigned char* bin, int size, int* shifts)
